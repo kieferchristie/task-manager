@@ -12,9 +12,13 @@ app.use(express.json());
 
 // Import routes
 const userRoutes = require('./routes/users');
+const taskRoutes = require('./routes/tasks');
+const authRoutes = require('./routes/auth');
 
 // Use routes
 app.use('/api/users', userRoutes);
+app.use('/api/tasks', taskRoutes);
+app.use('/api/auth', authRoutes);
 
 app.get('/', (req, res) => {
   res.send('Hello, world!');
