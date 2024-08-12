@@ -21,8 +21,9 @@ router.post('/', auth, async (req, res) => {
   try {
     const newTask = new Task({ title, description, userId });
     await newTask.save();
-    res.status(201).send('Task created successfully');
+    res.status(201).send(newTask);
   } catch (err) {
+    console.error('Error creating task:', err.message);
     res.status(500).send('Server error');
   }
 });
@@ -33,6 +34,7 @@ router.get('/', auth, async (req, res) => {
     const tasks = await Task.find();
     res.json(tasks);
   } catch (err) {
+    console.error('Error getting tasks:', err.message);
     res.status(500).send('Server error');
   }
 });
@@ -41,28 +43,33 @@ router.get('/', auth, async (req, res) => {
 router.get('/:id', auth, async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
-    if (!task) return res.status(404).send('Task not found');
+    if (!task) {
+      return res.status(404).send('Task not found');
+    }
     res.json(task);
   } catch (err) {
+    console.error('Error getting task:', err.message);
     res.status(500).send('Server error');
   }
 });
 
 // Update a task
 router.put('/:id', auth, async (req, res) => {
-  const { title, description } = req.body;
-  const { error } = taskSchema.validate({ title, description, userId: req.params.id });
+  const { error } = taskSchema.validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
   try {
     const task = await Task.findByIdAndUpdate(
       req.params.id,
-      { title, description },
+      req.body,
       { new: true }
     );
-    if (!task) return res.status(404).send('Task not found');
+    if (!task) {
+      return res.status(404).send('Task not found');
+    }
     res.json(task);
   } catch (err) {
+    console.error('Error updating task:', err.message);
     res.status(500).send('Server error');
   }
 });
@@ -71,9 +78,12 @@ router.put('/:id', auth, async (req, res) => {
 router.delete('/:id', auth, async (req, res) => {
   try {
     const task = await Task.findByIdAndDelete(req.params.id);
-    if (!task) return res.status(404).send('Task not found');
+    if (!task) {
+      return res.status(404).send('Task not found');
+    }
     res.send('Task deleted successfully');
   } catch (err) {
+    console.error('Error deleting task:', err.message);
     res.status(500).send('Server error');
   }
 });
